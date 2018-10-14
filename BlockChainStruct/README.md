@@ -40,3 +40,9 @@
 ### <font color="76EE00">区块链结构的体</font>
 
 ![](https://github.com/AlexBruceLu/BlockChain/wiki/blockBody.png)
+
+### <font color="76EE00">version 1 执行结果</font>
+
+**如下图所示：**
+
+![](https://github.com/AlexBruceLu/BlockChain/wiki/version1.png)
