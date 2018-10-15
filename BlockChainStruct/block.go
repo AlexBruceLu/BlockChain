@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"crypto/sha256"
 	"encoding/binary"
 	"time"
 )
@@ -31,7 +30,14 @@ func NewBlock(prevHash []byte, data string) *Block {
 		Hash:       []byte{},
 		Data:       []byte(data),
 	}
-	block.SetHash()
+	//block.SetHash()
+	//利用工作量证明计算哈希值
+
+	pow:=NewProofOfWork(&block)
+
+	hash, nonce := pow.Run()
+	block.Hash = hash
+	block.Nonce = nonce
 	return &block
 }
 
@@ -46,28 +52,28 @@ func Uint64ToByte(num uint64) []byte {
 }
 
 //生成哈希、
-func (block *Block) SetHash() {
-	//var blockInfo []byte
-	//blockInfo = append(blockInfo, block.Hash...)
-	//blockInfo = append(blockInfo, block.PrevHash...)
-	//blockInfo = append(blockInfo, block.Data...)
-	//blockInfo = append(blockInfo, Uint64ToByte(block.Difficulty)...)
-	//blockInfo = append(blockInfo, Uint64ToByte(block.Nonce)...)
-	//blockInfo = append(blockInfo, Uint64ToByte(block.Version)...)
-	//blockInfo = append(blockInfo, Uint64ToByte(block.TimeStamp)...)
-	//blockInfo = append(blockInfo, block.MerKelRoot...)
-	//--------------------代码优化------------------------
-	tmp := [][]byte{
-		block.Hash,
-		Uint64ToByte(block.Version),
-		Uint64ToByte(block.Nonce),
-		Uint64ToByte(block.TimeStamp),
-		Uint64ToByte(block.Difficulty),
-		block.MerKelRoot,
-		block.Data,
-		block.PrevHash,
-	}
-	blockInfo := bytes.Join(tmp, []byte{})
-	hash := sha256.Sum256(blockInfo)
-	block.Hash = hash[:] //定长数组转切片
-}
+//func (block *Block) SetHash() {
+//	//var blockInfo []byte
+//	//blockInfo = append(blockInfo, block.Hash...)
+//	//blockInfo = append(blockInfo, block.PrevHash...)
+//	//blockInfo = append(blockInfo, block.Data...)
+//	//blockInfo = append(blockInfo, Uint64ToByte(block.Difficulty)...)
+//	//blockInfo = append(blockInfo, Uint64ToByte(block.Nonce)...)
+//	//blockInfo = append(blockInfo, Uint64ToByte(block.Version)...)
+//	//blockInfo = append(blockInfo, Uint64ToByte(block.TimeStamp)...)
+//	//blockInfo = append(blockInfo, block.MerKelRoot...)
+//	//--------------------代码优化------------------------
+//	tmp := [][]byte{
+//		block.Hash,
+//		Uint64ToByte(block.Version),
+//		Uint64ToByte(block.Nonce),
+//		Uint64ToByte(block.TimeStamp),
+//		Uint64ToByte(block.Difficulty),
+//		block.MerKelRoot,
+//		block.Data,
+//		block.PrevHash,
+//	}
+//	blockInfo := bytes.Join(tmp, []byte{})
+//	hash := sha256.Sum256(blockInfo)
+//	block.Hash = hash[:] //定长数组转切片
+//}
