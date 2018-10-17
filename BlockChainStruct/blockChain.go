@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"fmt"
 	"github.com/bolt"
 	"log"
 )
@@ -86,9 +88,36 @@ func (bc *BlockChain) AddBlocks(data string) {
 		}
 		block := NewBlock(lastHash, data)
 
-		bucket.Put(block.Hash,block.Serialize())
-		bucket.Put([]byte(LastHashKey),block.Hash)
-		bc.Tail=block.Hash
+		bucket.Put(block.Hash, block.Serialize())
+		bucket.Put([]byte(LastHashKey), block.Hash)
+		bc.Tail = block.Hash
+		return nil
+	})
+}
+
+//打印区块
+func (bc *BlockChain) PrintBlockChain() {
+	blockHeight := 0
+	bc.Db.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(BlockBucket))
+		//从第一个key-value开始遍历，知道最后一个退出
+		bucket.ForEach(func(k, v []byte) error {
+			if bytes.Equal(k, []byte(LastHashKey)) {
+				return nil
+			}
+			block := Deserialize(v)
+			fmt.Printf("==============当前区块高度：%d================\n", blockHeight)
+			fmt.Printf("版本号：%d", block.Version)
+			fmt.Printf("前区块哈希值: %x\n", block.PrevHash)
+			fmt.Printf("梅克尔根: %x\n", block.MerKelRoot)
+			fmt.Printf("时间戳: %d\n", block.TimeStamp)
+			fmt.Printf("难度值(随便写的）: %d\n", block.Difficulty)
+			fmt.Printf("随机数 : %d\n", block.Nonce)
+			fmt.Printf("当前区块哈希值: %x\n", block.Hash)
+			fmt.Printf("区块数据 :%s\n", block.Data)
+			blockHeight++
+			return nil
+		})
 		return nil
 	})
 }

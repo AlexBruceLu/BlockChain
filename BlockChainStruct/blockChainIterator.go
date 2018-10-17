@@ -30,6 +30,7 @@ func (it *BlockChainIterator) Next() *Block {
 		if bucket == nil {
 			log.Panic("Next bucket不能为空请检查")
 		}
+		//获取游标位置
 		tmpBlock := bucket.Get(it.CurrentHashPoint)
 		//fmt.Printf("tmpblock: %s\n", tmpBlock)
 		block = Deserialize(tmpBlock)
