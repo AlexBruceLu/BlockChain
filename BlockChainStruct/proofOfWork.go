@@ -8,15 +8,15 @@ import (
 )
 
 type ProofOfWork struct {
-	block *Block
+	Block *Block
 	//目标值非常大的数
-	target *big.Int
+	Target *big.Int
 }
 
 //提供创建pow的函数
 func NewProofOfWork(block *Block) *ProofOfWork {
 	pow := ProofOfWork{
-		block: block,
+		Block: block,
 	}
 	//指定一个难度值，但类型需要从string转为big.Int
 	//sha256计算出哈希值32字节，要与之匹配(十六进制两个数一字节)
@@ -26,7 +26,7 @@ func NewProofOfWork(block *Block) *ProofOfWork {
 	//将难度值赋值给辅助变量，使用16进制的格式
 	tmpInt.SetString(tmpTarget, 16)
 	//fmt.Printf("%x\n",tmpInt)
-	pow.target = &tmpInt
+	pow.Target = &tmpInt
 	//fmt.Printf("%x\n",tmpInt)
 	//fmt.Println(pow.target)
 	return &pow
@@ -41,7 +41,7 @@ func NewProofOfWork(block *Block) *ProofOfWork {
 func (pow *ProofOfWork) Run() ([]byte, uint64) {
 	var nonce uint64 =0
 	var hash [32]byte
-	block := pow.block
+	block := pow.Block
 	//fmt.Printf("难度：%x/n",*pow.target)
 	for {
 		tmp := [][]byte{
@@ -68,7 +68,7 @@ func (pow *ProofOfWork) Run() ([]byte, uint64) {
 		//    0 if x == y
 		//   +1 if x >  y
 		//func (x *Int) Cmp(y *Int) (r int) 
-		if tmpInt.Cmp(pow.target) == -1 {
+		if tmpInt.Cmp(pow.Target) == -1 {
 			fmt.Printf("挖矿成功 hash：%x,nonce：%d\n",hash,nonce)
 			return hash[:],nonce
 		} else {

@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/gob"
+	"log"
 	"time"
 )
 
@@ -33,7 +35,7 @@ func NewBlock(prevHash []byte, data string) *Block {
 	//block.SetHash()
 	//利用工作量证明计算哈希值
 
-	pow:=NewProofOfWork(&block)
+	pow := NewProofOfWork(&block)
 
 	hash, nonce := pow.Run()
 	block.Hash = hash
@@ -49,6 +51,36 @@ func Uint64ToByte(num uint64) []byte {
 		panic(err)
 	}
 	return buffer.Bytes()
+}
+
+//实现block序列化方法
+func (b *Block) Serialize() []byte {
+	var buffer bytes.Buffer
+	//1. 使用gob进行字节流编码
+	encoder := gob.NewEncoder(&buffer)
+	//2. 定义编码器
+	err := encoder.Encode(&b)
+	if err != nil {
+		log.Panic("序列化编码失败")
+	}
+	//3. 使用编码器编码
+	return buffer.Bytes()
+
+}
+
+//实现block反序列化的方法
+func Deserialize(data []byte) Block {
+	var block Block
+	//1. 使用gob进行字节流解码
+	decoder := gob.NewDecoder(bytes.NewBuffer(data))
+	//2. 定义解码器
+	err := decoder.Decode(&block)
+	if err != nil {
+		log.Panic("反序列化解码失败")
+	}
+	//3. 使用解码器解码
+	return block
+
 }
 
 //生成哈希、
