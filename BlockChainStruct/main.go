@@ -2,10 +2,11 @@ package main
 
 func main() {
 	bc := NewBlockChain()
-	bc.AddBlocks("小明向小红转了5枚比特币")
-	bc.AddBlocks("小明向小红转了5枚比特币")
 	cli:=CLI{bc}
 	cli.Run()
+}
+
+	//bc.AddBlocks("小明向小红转了5枚比特币")
 	//for i, v := range bc{
 	//	fmt.Printf("----------当前区块高度 %d----------\n", i)
 	//	fmt.Printf("当前区块前区块哈希值%x\n", v.PrevHash)
@@ -27,5 +28,3 @@ func main() {
 	//	}
 	//}
 
-
-}

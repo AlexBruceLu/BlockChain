@@ -26,8 +26,14 @@ func (c *CLI) Run() {
 	switch cmd {
 	case "addBlock":
 		fmt.Println("添加新区块")
-		data := args[2]
-		c.AddBlock(data)
+		if len(args)==4 && args[2]=="--data" {
+			data := args[3]
+			c.AddBlock(data)
+		}else {
+			fmt.Println("添加区块使用参数不当")
+			fmt.Println(Usage)
+		}
+
 	case "printChain":
 		fmt.Println("正向打印区块")
 		c.PrintChain()
