@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/bolt"
+	//"github.com/btcsuite/btcutil"
 	"log"
 )
 
@@ -26,7 +27,7 @@ const BlockBucket = "BlockBucket"
 const LastHashKey = "LastHashKey"
 
 //定义一个区块链
-func NewBlockChain() *BlockChain {
+func NewBlockChain(address string) *BlockChain {
 	//创建创世块，添加到区块链中
 	//genesisBlock := GenesisBlock()
 	//return &BlockChain{
@@ -49,7 +50,7 @@ func NewBlockChain() *BlockChain {
 				log.Panic("bucket创建失败")
 			}
 			//创世块写入bucket
-			genesisBlock := GenesisBlock()
+			genesisBlock := GenesisBlock(address)
 			// 存储创世块的哈希值，实现序列化方法
 			bucket.Put(genesisBlock.Hash, genesisBlock.Serialize())
 			bucket.Put([]byte(LastHashKey), genesisBlock.Hash)
@@ -64,12 +65,14 @@ func NewBlockChain() *BlockChain {
 }
 
 //定义一个创世块
-func GenesisBlock() *Block {
-	return NewBlock([]byte{}, "这是第一个创世块")
+func GenesisBlock(address string) *Block {
+	//return NewBlock([]byte{}, "这是第一个创世块")
+	tx := NewCoinBaseTx(address, "这是第一个创世块")
+	return NewBlock([]byte{}, []*Transaction{tx})
 }
 
 //添加区块
-func (bc *BlockChain) AddBlocks(data string) {
+func (bc *BlockChain) AddBlocks(txs []*Transaction) {
 	//获取最后一个区块，得到前区块的哈希值
 	//lastBlock := bc.Blocks[len(bc.Blocks)-1]
 	//prevHash := lastBlock.Hash
@@ -86,7 +89,7 @@ func (bc *BlockChain) AddBlocks(data string) {
 		if bucket == nil {
 			log.Panic("BlockBucket 添加时不能为空请检查")
 		}
-		block := NewBlock(lastHash, data)
+		block := NewBlock(lastHash, txs)
 
 		bucket.Put(block.Hash, block.Serialize())
 		bucket.Put([]byte(LastHashKey), block.Hash)
@@ -114,10 +117,94 @@ func (bc *BlockChain) PrintBlockChain() {
 			fmt.Printf("难度值(随便写的）: %d\n", block.Difficulty)
 			fmt.Printf("随机数 : %d\n", block.Nonce)
 			fmt.Printf("当前区块哈希值: %x\n", block.Hash)
-			fmt.Printf("区块数据 :%s\n", block.Data)
+			fmt.Printf("区块数据 :%s\n", block.Transaction)
 			blockHeight++
 			return nil
 		})
 		return nil
 	})
+}
+
+//找出指定地址的所有UTXO
+func (bc *BlockChain) FindUTXOs(address string) []TxOutput {
+	var UTXO []TxOutput
+	txs := bc.FindUTXOTransaction(address)
+	for _, tx := range txs {
+		for _, output := range tx.TxOutPuts {
+			if address == output.PubKeyHash {
+				UTXO = append(UTXO, output)
+			}
+		}
+	}
+	return UTXO
+}
+
+//根据需求找出合理的UTXO
+func (bc *BlockChain) FindNeedUTXOs(from string, amount float64) (map[string][]uint64, float64) {
+	utxos := make(map[string][]uint64)
+	var calc float64
+	txs := bc.FindUTXOTransaction(from)
+	for _, tx := range txs {
+		for i, output := range tx.TxOutPuts {
+			if from == output.PubKeyHash {
+				if calc < amount {
+					utxos[string(tx.TxId)] = append(utxos[string(tx.TxId)], uint64(i))
+					calc += output.Value
+					if calc >= amount {
+						fmt.Printf("找到了满足条件的金额：%f\n", calc)
+						return utxos, calc
+					}
+				}
+			} else {
+				fmt.Printf("金额不足，转账金额：%f,账户余额：%f\n", amount, utxos)
+			}
+		}
+	}
+	return utxos, calc
+}
+
+//找出所有的UTXO交易
+func (bc *BlockChain) FindUTXOTransaction(address string) []*Transaction {
+	var txs []*Transaction //存储所有包含UTXO的交易信息
+	//定义一个map来保存未消费过的output，key为output的交易ID，value为交易引索数组
+	spendOutputs := make(map[string][]int64)
+	it := bc.NewIterator()
+	for {
+		//1. 遍历区块
+		block := it.Next()
+		//2. 遍历交易
+		for _, tx := range block.Transaction {
+			//遍历output找出，和自己相关的UTXO，添加之前检查是否已经消耗
+		OUTPUT:
+			for i, output := range tx.TxOutPuts {
+				//剔除交易里面已经消耗的UTXO
+				if spendOutputs[string(tx.TxId)] != nil {
+					for _, j := range spendOutputs[string(tx.TxId)] {
+						if int64(i) == j {
+							continue OUTPUT
+						}
+					}
+				}
+				//经检查目标地址是否与output相同，如果满足条件再追加UTXO
+				if output.PubKeyHash == address {
+					txs = append(txs, tx)
+				}
+			}
+			//如果是挖矿交易就直接跳过，不做遍历
+			if !tx.IsCoinBase() {
+				//遍历input变自己花费过的UTXO表示出来
+				for _, input := range tx.TxInputs {
+					//判断目标值与当前input是否一致
+					if input.Sig == address {
+						spendOutputs[string(input.TxId)] = append(spendOutputs[string(input.TxId)], input.Index)
+					}
+				}
+			}
+		}
+		if len(block.PrevHash) == 0 {
+			fmt.Println("区块遍历结束")
+			break
+		}
+	}
+	return txs
 }

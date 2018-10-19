@@ -39,7 +39,7 @@ func NewProofOfWork(block *Block) *ProofOfWork {
 //a. 找到了返回退出
 //b. 没找到nonce加一，继续寻找
 func (pow *ProofOfWork) Run() ([]byte, uint64) {
-	var nonce uint64 =0
+	var nonce uint64 = 0
 	var hash [32]byte
 	block := pow.Block
 	//fmt.Printf("难度：%x/n",*pow.target)
@@ -47,11 +47,11 @@ func (pow *ProofOfWork) Run() ([]byte, uint64) {
 		tmp := [][]byte{
 			block.Hash,
 			Uint64ToByte(block.Version),
-			Uint64ToByte(nonce),//用定义的nonce值
+			Uint64ToByte(nonce), //用定义的nonce值
 			Uint64ToByte(block.TimeStamp),
 			Uint64ToByte(block.Difficulty),
 			block.MerKelRoot,
-			block.Data,
+			//block.Data,
 			block.PrevHash,
 		}
 		//fmt.Println(nonce)
@@ -67,10 +67,10 @@ func (pow *ProofOfWork) Run() ([]byte, uint64) {
 		//   -1 if x <  y  比pow.target哈希值小即为找到
 		//    0 if x == y
 		//   +1 if x >  y
-		//func (x *Int) Cmp(y *Int) (r int) 
+		//func (x *Int) Cmp(y *Int) (r int)
 		if tmpInt.Cmp(pow.Target) == -1 {
-			fmt.Printf("挖矿成功 hash：%x,nonce：%d\n",hash,nonce)
-			return hash[:],nonce
+			fmt.Printf("挖矿成功 hash：%x,nonce：%d\n", hash, nonce)
+			return hash[:], nonce
 		} else {
 			nonce++
 		}

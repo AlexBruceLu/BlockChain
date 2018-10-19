@@ -42,3 +42,12 @@
 **如下图所示：**
 
 ![](https://github.com/AlexBruceLu/BlockChain/wiki/version1.png)
+
+### <font color="76EE00">version 2 执行结果</font>
+
+### <font color="76EE00">version 3 执行结果</font>
+
+### <font color="76EE00">version 4 执行结果</font>
+
+### <font color="76EE00">version 5 执行结果</font>
+

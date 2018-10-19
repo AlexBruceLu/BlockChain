@@ -17,20 +17,22 @@ type Block struct {
 	Difficulty uint64 //难度值
 	Nonce      uint64 //随机数，挖矿要找的数
 	Hash       []byte //当前哈希值
-	Data       []byte //所要传递数据
+	//Data       []byte //所要传递数据
+	Transaction []*Transaction //真实的交易数组
 }
 
 //创建区块
-func NewBlock(prevHash []byte, data string) *Block {
+func NewBlock(prevHash []byte, txs []*Transaction) *Block {
 	block := Block{
-		Version:    00,
-		PrevHash:   prevHash,
-		MerKelRoot: []byte{},
-		TimeStamp:  uint64(time.Now().Unix()),
-		Difficulty: 0, //写的随机无效值
-		Nonce:      0, //写的随机无效值
-		Hash:       []byte{},
-		Data:       []byte(data),
+		Version:     00,
+		PrevHash:    prevHash,
+		MerKelRoot:  []byte{},
+		TimeStamp:   uint64(time.Now().Unix()),
+		Difficulty:  0, //写的随机无效值
+		Nonce:       0, //写的随机无效值
+		Hash:        []byte{},
+		Transaction: txs, //传递真实数据
+		//Data:       []byte(data),
 	}
 	//block.SetHash()
 	//利用工作量证明计算哈希值
