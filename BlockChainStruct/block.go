@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"encoding/binary"
 	"encoding/gob"
 	"log"
@@ -36,7 +37,7 @@ func NewBlock(prevHash []byte, txs []*Transaction) *Block {
 	}
 	//block.SetHash()
 	//利用工作量证明计算哈希值
-
+	block.MerKelRoot = block.MakeMerkelRoot()
 	pow := NewProofOfWork(&block)
 
 	hash, nonce := pow.Run()
@@ -83,6 +84,16 @@ func Deserialize(data []byte) Block {
 	//3. 使用解码器解码
 	return block
 
+}
+
+//模拟梅克尔根只对数据做简短拼接，不实现二叉树
+func (block *Block) MakeMerkelRoot() []byte {
+	var info []byte
+	for _, tx := range block.Transaction {
+		info = append(info, tx.TxId...)
+	}
+	hash := sha256.Sum256(info)
+	return hash[:]
 }
 
 //生成哈希、
