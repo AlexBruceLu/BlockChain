@@ -5,10 +5,10 @@ import (
 	"time"
 )
 
-func (c *CLI) AddBlock(txs []*Transaction) {
-	c.BC.AddBlocks(txs)
-	fmt.Println("区块添加成功！")
-}
+//func (c *CLI) AddBlock(txs []*Transaction) {
+//	c.BC.AddBlocks(txs)
+//	fmt.Println("区块添加成功！")
+//}
 
 func (c *CLI) PrintChain() {
 	//正向打印区块链
@@ -36,4 +36,31 @@ func (c *CLI) PrintChainR() {
 			break
 		}
 	}
+}
+
+//获取余额
+func (c *CLI) GetBalance(address string) {
+	utxos := c.BC.FindUTXOs(address)
+	total := 0.0
+	if utxos == nil {
+		fmt.Println("地址错误，请查证！")
+	}
+	for _, utxo := range utxos {
+		total += utxo.Value
+	}
+	fmt.Printf("\"%s\"的余额为：%f\n", address, total)
+}
+
+//转账
+func (c *CLI) Send(from, to string, amount float64, miner, data string) {
+	//创建挖矿交易
+	coinBase := NewCoinBaseTx(miner, data)
+	//创建普通交易
+	tx := NewTransaction(from, to, amount, c.BC)
+	if tx == nil {
+		return
+	}
+	//添加区块
+	c.BC.AddBlocks([]*Transaction{coinBase, tx})
+	fmt.Println("转账成功")
 }
