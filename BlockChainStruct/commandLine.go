@@ -64,3 +64,22 @@ func (c *CLI) Send(from, to string, amount float64, miner, data string) {
 	c.BC.AddBlocks([]*Transaction{coinBase, tx})
 	fmt.Println("转账成功")
 }
+
+//添加钱包
+func (c *CLI) NewWallet() {
+	ws := NewWallets()
+	address := ws.CreateWallet()
+	//ws.SaveToFile()
+	fmt.Printf("创建钱包成功，地址：%s\n", address)
+}
+
+//列举所有地址
+func (c *CLI) ListAllAddress() {
+	ws := NewWallets()
+	ws.LoadWalletFromFile()
+	fmt.Println(ws)
+	addresses := ws.ListAllAddresses()
+	for _, address := range addresses {
+		fmt.Printf("地址：%s\n", address)
+	}
+}
